@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserLoginController extends Controller
 {
@@ -20,7 +21,7 @@ class UserLoginController extends Controller
     protected function authenticated(Request $request, $user)
     {
         if ($user->role !== 'user') {
-            auth()->logout();
+            Auth::logout();
             return redirect()->route('login')
                 ->withErrors(['email' => 'Anda tidak memiliki akses sebagai user.']);
         }

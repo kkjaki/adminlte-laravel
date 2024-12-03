@@ -7,6 +7,38 @@
 @stop
 
 @section('content')
+    <form id="chat-form">
+        <input type="text" id="message" placeholder="Ketik pertanyaan Anda..." required>
+        <button type="submit">Tanya</button>
+    </form>
+    <div id="chat-log"></div>
+
+    <script>
+        document.getElementById('chat-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const message = document.getElementById('message').value;
+
+            // Kirim pesan ke backend
+            const response = await fetch('{{ route('chatbot.reply') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    message
+                })
+            });
+
+            const data = await response.json();
+
+            // Tampilkan pesan di log
+            document.getElementById('chat-log').innerHTML += `<p>User: ${message}</p>`;
+            document.getElementById('chat-log').innerHTML += `<p>Bot: ${data.response}</p>`;
+            document.getElementById('message').value = '';
+        });
+    </script>
+
     <div class="container-fluid">
         {{-- Row untuk grafik supplier dan kondisi --}}
         <div class="row mt-4">
