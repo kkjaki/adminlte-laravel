@@ -16,8 +16,7 @@ class Supplier extends Model
     protected $fillable = [
         's_no',       // Nomor supplier
         'nama',       // Nama supplier
-        'alamat',     // Alamat supplier
-        'kontak',     // Kontak supplier
+        'kota',     // Kota supplier
     ];
 
     /**

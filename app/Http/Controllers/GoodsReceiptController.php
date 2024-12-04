@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\GoodsReceipt;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -28,11 +29,22 @@ class GoodsReceiptController extends Controller
      */
     public function index()
     {
-        $receipts = GoodsReceipt::with('supplier')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        if (Auth::user()->role == 'admin') {
+            # code...
+            $receipts = GoodsReceipt::with('supplier')
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        return view('goods_receipt.index', compact('receipts'));
+            return view('goods_receipt.index', compact('receipts'));
+        } else {
+            // Menampilkan hanya data barang yang dimasukkan oleh user ini
+            $receipts = GoodsReceipt::with('supplier')
+                ->where('user_id', Auth::id()) // Filter berdasarkan user ID
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return view('goods_receipt.index', compact('receipts'));
+        }
     }
 
     /**
@@ -66,7 +78,7 @@ class GoodsReceiptController extends Controller
 
         // Create a new goods receipt
         GoodsReceipt::create([
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'supplier_id' => $request->supplier_id,
             'tanggal_terima' => $request->tanggal_terima,
             'nama_barang' => $request->nama_barang,
@@ -89,10 +101,10 @@ class GoodsReceiptController extends Controller
     {
         // Ambil data goods receipt beserta relasinya
         $goodsReceipt = GoodsReceipt::with(['supplier', 'user'])->findOrFail($id);
-        
+
         // Ambil semua supplier untuk dropdown
         $suppliers = Supplier::all();
-        
+
         return view('goods_receipt.edit', compact('goodsReceipt', 'suppliers'));
     }
 
@@ -120,7 +132,7 @@ class GoodsReceiptController extends Controller
         $goodsReceipt->update($request->all());
 
         return redirect()->route('goods-receipts.index')
-                        ->with('success', 'Data penerimaan barang berhasil diperbarui');
+            ->with('success', 'Data penerimaan barang berhasil diperbarui');
     }
 
     /**
@@ -133,7 +145,7 @@ class GoodsReceiptController extends Controller
     {
         try {
             // Delete the goods receipt
-            DB::table('goods_receipts')->where('id',$id)->delete();
+            DB::table('goods_receipts')->where('id', $id)->delete();
 
             return redirect()->route('goods-receipts.index')
                 ->with('success', 'Data penerimaan barang berhasil dihapus');
@@ -144,43 +156,74 @@ class GoodsReceiptController extends Controller
     }
     /**
      * Display the dashboard with summarized data.
-     * Includes data for:
+     * Includes data for Admin-only feature:
      * - Total receipts per supplier
      * - Item conditions (good/damaged)
      * - Monthly receipt trends
-     * - Admin-only feature
+     * 
      * 
      * @return \Illuminate\View\View
      */
     public function dashboard()
     {
-        // Data for total receipts per supplier
-        $supplierData = GoodsReceipt::with('supplier')
-            ->select('supplier_id', DB::raw('count(*) as total'))
-            ->groupBy('supplier_id')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'label' => $item->supplier->nama,
-                    'value' => $item->total,
-                ];
-            });
+        if (Auth::user()->role == 'admin') {
+            # code...
+            // Data for total receipts per supplier
+            $supplierData = GoodsReceipt::with('supplier')
+                ->select('supplier_id', DB::raw('count(*) as total'))
+                ->groupBy('supplier_id')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'label' => $item->supplier->nama,
+                        'value' => $item->total,
+                    ];
+                });
 
-        // Data for item conditions (good/damaged)
-        $kondisiData = GoodsReceipt::select('kondisi', DB::raw('count(*) as total'))
-            ->groupBy('kondisi')
-            ->get();
+            // Data untuk kinerja user (jumlah barang yang mereka inputkan)
+            $userData = GoodsReceipt::with('user')
+                ->select('user_id', DB::raw('count(*) as total'))
+                ->groupBy('user_id')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'label' => $item->user->name,
+                        'value' => $item->total,
+                    ];
+                });
 
-        // Data for monthly receipt trends
-        $monthlyData = GoodsReceipt::select(
-            DB::raw('DATE_FORMAT(tanggal_terima, "%Y-%m") as month'),
-            DB::raw('count(*) as total')
-        )
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
+            // Data for item conditions (good/damaged)
+            $kondisiData = GoodsReceipt::select('kondisi', DB::raw('count(*) as total'))
+                ->groupBy('kondisi')
+                ->get();
 
-        // Render the dashboard view with the data
-        return view('goods_receipt.dashboard', compact('supplierData', 'kondisiData', 'monthlyData'));
+            // Data for monthly receipt trends
+            $monthlyData = GoodsReceipt::select(
+                DB::raw('DATE_FORMAT(tanggal_terima, "%Y-%m") as month'),
+                DB::raw('count(*) as total')
+            )
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get();
+
+            // Render the dashboard view with the data
+            return view('goods_receipt.dashboard', compact('supplierData','userData', 'kondisiData', 'monthlyData'));
+        } else {
+            $dailyData = GoodsReceipt::where('user_id', Auth::id())
+                ->select(
+                    DB::raw('DATE(tanggal_terima) as date'),
+                    DB::raw('count(*) as total')
+                )
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+
+            // Grafik kondisi barang yang dimasukkan oleh user
+            $kondisiData = GoodsReceipt::where('user_id', Auth::id())
+                ->select('kondisi', DB::raw('count(*) as total'))
+                ->groupBy('kondisi')
+                ->get();
+            return view('dashboard', compact('dailyData', 'kondisiData'));
+        }
     }
 }
