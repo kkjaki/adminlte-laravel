@@ -10,7 +10,7 @@ class UserLoginController extends Controller
 {
     use AuthenticatesUsers;
 
-    protected $redirectTo = '/dashboard'; // Redirect user biasa
+    protected $redirectTo = 'good_receipts.dashboard'; // Redirect user biasa
 
     public function __construct()
     {
@@ -25,5 +25,10 @@ class UserLoginController extends Controller
             return redirect()->route('login')
                 ->withErrors(['email' => 'Anda tidak memiliki akses sebagai user.']);
         }
+    }
+
+    public function showLoginForm()
+    {
+        return view('auth.login');
     }
 }

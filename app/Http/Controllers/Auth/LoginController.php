@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
@@ -26,7 +27,7 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/goods-receipts/dashboard';
+    protected $redirectTo = 'good_receipts.dashboard';
 
     /**
      * Create a new controller instance.
@@ -42,8 +43,8 @@ class LoginController extends Controller
     protected function authenticated(Request $request, $user)
     {
         if ($user->role !== 'admin') {
-            auth()->logout();
-            return redirect()->route('admin.login')
+            Auth::logout();
+            return redirect()->route('auth.login')
                 ->withErrors(['email' => 'Anda tidak memiliki akses sebagai admin.']);
         }
     }
@@ -51,6 +52,6 @@ class LoginController extends Controller
     // Override untuk menampilkan view login admin
     public function showLoginForm()
     {
-        return view('auth.admin-login');
+        return view('auth.loginkhususadmin');
     }
 }

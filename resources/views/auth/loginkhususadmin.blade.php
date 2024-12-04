@@ -5,7 +5,7 @@
 @section('auth_header', 'Admin Login')
 
 @section('auth_body')
-    <form action="{{ route('admin.login') }}" method="post">
+    <form action="{{ route('loginkhususadmin') }}" method="post">
         @csrf
         
         {{-- Email field --}}

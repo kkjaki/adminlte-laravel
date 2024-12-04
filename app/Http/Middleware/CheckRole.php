@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CheckRole
 {
@@ -18,8 +19,9 @@ class CheckRole
      */
     public function handle(Request $request, Closure $next, $role)
     {
-        if (!auth()->check() || auth()->user()->role !== $role) {
-            return redirect()->route($role === 'admin' ? 'admin.login' : 'login');
+        // if (!Auth::check() || Auth::user()->role !== $role) {
+        if (!Auth::check()) {
+            abort(403, 'Access denied');
         }
 
         return $next($request);

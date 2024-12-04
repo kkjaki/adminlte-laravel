@@ -306,7 +306,7 @@ return [
     ],
     [
         'text'        => 'Dashboard',
-        'url'         => '/home',
+        'url'         => '/goods-receipts/dashboard',
         'icon'        => 'fas fa-fw fa-home',
     ],
     [
@@ -322,7 +322,7 @@ return [
     [
         'text'  => 'Chat Bot',
         'url'   => '/chatbot',
-        'icon'  => 'fas fa-fw fa-list'
+        'icon'  => 'fas fa-robot'
     ],
     // [
     //     'text'  => 'Data Barang',
