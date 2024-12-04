@@ -9,40 +9,56 @@
 @section('content')
     <div class="container-fluid">
         <div class="row mt-4">
-            <!-- Grafik Penerimaan per Supplier -->
-            <div class="col-md-6">
+            <!-- Grafik Kinerja Supplier -->
+            <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Jumlah Penerimaan per Supplier</h3>
+                        <h3 class="card-title">Kinerja per Supplier</h3>
                     </div>
                     <div class="card-body">
                         <canvas id="supplierChart"></canvas>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Grafik Kondisi Barang -->
-            <div class="col-md-6">
+        <div class="row mt-4">
+            <!-- Grafik Kinerja User -->
+            <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Kondisi Barang</h3>
+                        <h3 class="card-title">Kinerja per User</h3>
                     </div>
                     <div class="card-body">
-                        <canvas id="kondisiChart"></canvas>
+                        <canvas id="userChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="row mt-4">
-            <!-- Grafik Penerimaan per Bulan -->
+            <!-- Grafik Tren Penerimaan Bulanan -->
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Total Penerimaan per Bulan</h3>
+                        <h3 class="card-title">Tren Penerimaan per Bulan</h3>
                     </div>
                     <div class="card-body">
                         <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <!-- Grafik Kondisi Barang -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Kondisi Barang</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="kondisiChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -86,32 +102,35 @@
                 }
             );
 
-            // Data untuk grafik kondisi
-            const kondisiChart = new Chart(
-                document.getElementById('kondisiChart'), {
-                    type: 'pie',
+            // Data untuk grafik kinerja user
+            const userChart = new Chart(
+                document.getElementById('userChart'), {
+                    type: 'bar',
                     data: {
-                        labels: {!! json_encode($kondisiData->pluck('kondisi')) !!},
+                        labels: {!! json_encode($userData->pluck('label')) !!},
                         datasets: [{
-                            data: {!! json_encode($kondisiData->pluck('total')) !!},
-                            backgroundColor: [
-                                'rgba(75, 192, 192, 0.5)',
-                                'rgba(255, 99, 132, 0.5)'
-                            ],
-                            borderColor: [
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(255, 99, 132, 1)'
-                            ],
+                            label: 'Jumlah Input Barang',
+                            data: {!! json_encode($userData->pluck('value')) !!},
+                            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
                             borderWidth: 1
                         }]
                     },
                     options: {
-                        responsive: true
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
                     }
                 }
             );
 
-            // Data untuk grafik bulanan
+            // Data untuk grafik tren penerimaan bulanan
             const monthlyChart = new Chart(
                 document.getElementById('monthlyChart'), {
                     type: 'line',
@@ -135,6 +154,31 @@
                                 }
                             }
                         }
+                    }
+                }
+            );
+
+            // Data untuk grafik kondisi barang
+            const kondisiChart = new Chart(
+                document.getElementById('kondisiChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: {!! json_encode($kondisiData->pluck('kondisi')) !!},
+                        datasets: [{
+                            data: {!! json_encode($kondisiData->pluck('total')) !!},
+                            backgroundColor: [
+                                'rgba(75, 192, 192, 0.5)',
+                                'rgba(255, 99, 132, 0.5)'
+                            ],
+                            borderColor: [
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(255, 99, 132, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true
                     }
                 }
             );
